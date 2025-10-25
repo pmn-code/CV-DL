@@ -6,13 +6,13 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 
-class NKSIDDataset(Dataset):
-    """NKSID数据集加载类"""
+class FLSMDDDataset(Dataset):
+    """FLSMDD数据集加载类"""
     def __init__(self, dataset_root, split_ratio="0.80_0.10_0.10", data_type="train", transform=None):
         """
         初始化数据集
         Args:
-            dataset_root: 数据集根目录路径，如 "e:/PMN_WS/torch_test/datasets/classification/NKSID"
+            dataset_root: 数据集根目录路径，如 "e:/PMN_WS/torch_test/datasets/classification/FLSMDD"
             split_ratio: 数据划分比例文件夹名称，如 "0.80_0.10_0.10"
             data_type: 数据类型，可选 "train", "test", "val"
             transform: 数据预处理转换
@@ -198,17 +198,17 @@ def get_data_loaders(dataset_root, split_ratio="0.80_0.10_0.10", batch_size=32, 
         train_loader, val_loader, test_loader: 训练、验证、测试数据加载器
     """
     # 创建数据集实例
-    train_dataset = NKSIDDataset(
+    train_dataset = FLSMDDDataset(
         dataset_root=dataset_root,
         split_ratio=split_ratio,
         data_type="train"
     )
-    val_dataset = NKSIDDataset(
+    val_dataset = FLSMDDDataset(
         dataset_root=dataset_root,
         split_ratio=split_ratio,
         data_type="val"
     )
-    test_dataset = NKSIDDataset(
+    test_dataset = FLSMDDDataset(
         dataset_root=dataset_root,
         split_ratio=split_ratio,
         data_type="test"
@@ -254,7 +254,7 @@ def get_data_loaders(dataset_root, split_ratio="0.80_0.10_0.10", batch_size=32, 
 
 if __name__ == "__main__":
     # 示例使用
-    dataset_root = "E:/PMN_WS/torch_test/datasets/classification/NKSID"
+    dataset_root = "E:/PMN_WS/torch_test/datasets/classification/FLSMDD"
     split_ratio = "0.80_0.10_0.10"
     
     # 获取数据加载器

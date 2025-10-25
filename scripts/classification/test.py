@@ -4,7 +4,7 @@ import swanlab
 import os
 from model import Tudui, Net
 import load_data
-
+import time
 class TestModel:
     def __init__(self, model_name, model_params_path, val_dataset=None):
         """
@@ -68,10 +68,6 @@ class TestModel:
         Args:
             experiment_name: 实验名称，如果为None则自动生成
         """
-        if experiment_name is None:
-            # 从模型参数文件名中提取信息
-            filename = os.path.basename(self.model_params_path)
-            experiment_name = f"test-{filename[:-4]}"
         
         # 初始化swanlab实验
         swanlab.init(
@@ -171,7 +167,7 @@ class TestModel:
         # # 计算最终指标
         # print(all_predictions)
         # print(all_labels)
-        avg_loss = test_loss / total
+        loss = test_loss / total
         accuracy = 100. * correct / total
         
         # 计算各类别的精确率、召回率和F1分数
@@ -210,7 +206,7 @@ class TestModel:
         
         # 打印测试结果
         print("\n测试结果:")
-        print(f"- 平均损失: {avg_loss:.4f}")
+        print(f"- 平均损失: {loss:.4f}")
         print(f"- 准确率: {accuracy:.2f}%")
         print(f"- 平均精确率: {avg_precision:.4f}")
         print(f"- 平均召回率: {avg_recall:.4f}")
@@ -219,7 +215,7 @@ class TestModel:
         # 通过swanlab记录结果
         if log_results:
             swanlab.log({
-                "test/avg_loss": avg_loss,
+                "test/loss": loss,
                 "test/accuracy": accuracy,
                 "test/precision": avg_precision,
                 "test/recall": avg_recall,
@@ -245,7 +241,7 @@ class TestModel:
         
         # 返回测试指标
         metrics = {
-            "avg_loss": avg_loss,
+            "loss": loss,
             "accuracy": accuracy,
             "precision": avg_precision,
             "recall": avg_recall,
@@ -277,8 +273,20 @@ def batch_test_model_files(model_dir, model_name, dataset_root, split_ratio, bat
         if file.endswith('.pth'):
             model_files.append(os.path.join(model_dir, file))
     
-    # 按文件名排序（假设文件名格式一致，可以按epoch排序）
-    model_files.sort()
+    # 按文件名中的最后数字升序排序
+    def get_file_number(file_path):
+        # 提取文件名
+        filename = os.path.basename(file_path)
+        # 尝试从文件名中提取数字
+        import re
+        numbers = re.findall(r'\d+', filename)
+        if numbers:
+            # 返回最后一个数字作为排序键
+            return int(numbers[-1])
+        return 0
+    
+    # 使用自定义排序函数
+    model_files.sort(key=get_file_number)
     
     print(f"找到 {len(model_files)} 个模型文件待测试：")
     for i, model_file in enumerate(model_files):
@@ -335,7 +343,7 @@ def batch_test_model_files(model_dir, model_name, dataset_root, split_ratio, bat
             )
             
             # 设置swanlab，使用不同的实验名称避免冲突
-            experiment_name = f"batch-test-{os.path.basename(model_file)[:-4]}"
+            experiment_name = f"FLSMDD-test-{int(time.time())}"
             tester.setup_swanlab(experiment_name=experiment_name)
             
             # 测试模型（使用真正的测试集）
@@ -372,7 +380,7 @@ def batch_test_model_files(model_dir, model_name, dataset_root, split_ratio, bat
         for result in all_results:
             file_name = result['model_file']
             accuracy = result['metrics']['accuracy']
-            loss = result['metrics']['avg_loss']
+            loss = result['metrics']['loss']
             f1 = result['metrics']['f1_score']
             
             print(f"{file_name:<30} {accuracy:.2f}%      {loss:.4f}    {f1:.4f}")
@@ -388,9 +396,9 @@ def batch_test_model_files(model_dir, model_name, dataset_root, split_ratio, bat
 # 示例用法
 def main():
     # 批量测试配置
-    model_dir = "E:/PMN_WS/torch_test/scripts/classification/Tudui"
+    model_dir = "E:/PMN_WS/torch_test/scripts/classification/Tudui_FLSMDD"
     model_name = "Tudui"
-    dataset_root = "E:/PMN_WS/torch_test/datasets/classification/NKSID"
+    dataset_root = "E:/PMN_WS/torch_test/datasets/classification/FLSMDD"
     split_ratio = "0.80_0.10_0.10"
     
     # 执行批量测试
